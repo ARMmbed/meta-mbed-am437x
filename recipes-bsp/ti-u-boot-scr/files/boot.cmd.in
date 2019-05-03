@@ -1,0 +1,39 @@
+setenv sd_device                        0;
+setenv flag_part_no                     2;
+setenv part_five                        5;
+setenv part_six                         6;
+setenv root_part_no          ${part_five};
+setenv env_file_path       /boot/uEnv.txt;
+setenv debug_prefix         "[boot.scr] ";
+
+# load bootargs from previous stage bootloader
+fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs;
+
+
+# check which partition to boot into
+setenv flag_part ${sd_device}:${flag_part_no};
+echo ${debug_prefix}"Detecting boot flags in mmc ${flag_part}...";
+if test -e mmc ${flag_part} /five; then
+    echo ${debug_prefix}"found boot flag for partition "${part_five};
+    setenv root_part_no ${part_five};
+elif test -e mmc ${flag_part} /six; then
+    echo ${debug_prefix}"found boot flag for partition "${part_six};
+    setenv root_part_no ${part_six};
+else
+    echo "${debug_prefix}Warning: No boot flags found, booting into default partition: ${root_part_no}"
+fi;
+
+
+# allow behaviour to be changed by the updated image
+setenv bootpart ${sd_device}:${root_part_no};
+echo ${debug_prefix}"Detecting ${env_file_path} in mmc ${bootpart}...";
+if test -e mmc ${bootpart} ${env_file_path}; then
+    echo ${debug_prefix}"Importing Environemnts from ${env_file_path}";
+    load mmc ${bootpart} ${kernel_addr_r} ${env_file_path};
+    env import -t ${kernel_addr_r} ${filesize};
+fi;
+
+# boot into partition
+echo ${debug_prefix}"Booting into partition mmc ${bootpart}...";
+
+
