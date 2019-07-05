@@ -3,8 +3,6 @@ include recipes-core/images/arago-base-tisdk-image.bb
 
 LICENSE = "Apache-2.0"
 
-#MACHINE = "am437x-evm"
-
 DEPENDS = "parted-native mtools-native dosfstools-native e2fsprogs-native"
 
 # Include modules in rootfs
@@ -28,3 +26,8 @@ create_mnt_dirs() {
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "create_mnt_dirs;"
+
+#Required for libglib read-only filesystem support
+DEPENDS += " qemuwrapper-cross "
+
+IMAGE_FEATURES += " read-only-rootfs "
